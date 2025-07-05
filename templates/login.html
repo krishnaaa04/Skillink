@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skillink - Login/Signup</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --primary-hover: #0b5ed7;
+            --header-bg: #0d6efd;
+            --text-light: #f8f9fa;
+            --text-dark: #212529;
+            --card-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --error-color: #dc3545;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-dark);
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #bae6fd 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            background-image: url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            background-blend-mode: overlay;
+            background-color: rgba(255,255,255,0.9);
+        }
+        
+        .auth-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            padding: 2.5rem;
+            max-width: 450px;
+            width: 100%;
+            margin: 2rem auto;
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .auth-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+        
+        .brand-heading {
+            font-weight: 700;
+            font-size: 2rem;
+            letter-spacing: -0.5px;
+            margin: 0 0 1.5rem 0;
+            color: var(--primary-color);
+            text-align: center;
+        }
+        
+        .nav-tabs {
+            border-bottom: none;
+            margin-bottom: 1.5rem;
+            justify-content: center;
+        }
+        
+        .nav-tabs .nav-link {
+            border: none;
+            color: #6c757d;
+            font-weight: 500;
+            padding: 0.5rem 1.5rem;
+            position: relative;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            background-color: transparent;
+            border: none;
+        }
+        
+        .nav-tabs .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50%;
+            height: 3px;
+            background-color: var(--primary-color);
+            border-radius: 3px;
+        }
+        
+        .form-control {
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+        
+        .form-text {
+            text-align: center;
+            margin-top: 1rem;
+            color: #6c757d;
+        }
+        
+        .form-text a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .form-text a:hover {
+            text-decoration: underline;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        #employeeFields {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        /* Error message styling */
+        .error-message {
+            color: var(--error-color);
+            font-size: 0.875rem;
+            margin-top: -0.5rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        
+        .is-invalid {
+            border-color: var(--error-color) !important;
+        }
+        
+        /* Floating Home Button Styles */
+        .floating-home-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .floating-home-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            color: white;
+        }
+        
+        .floating-home-btn i {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Home Button -->
+    <a href="{{ url_for('home') }}" class="floating-home-btn">
+        <i class="bi bi-house-door"></i>
+        <span>Home</span>
+    </a>
+
+    <div class="container">
+        <div class="auth-container">
+            <h1 class="brand-heading">Skillink</h1>
+
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="alert-container">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            
+            <ul class="nav nav-tabs" id="authTabs">
+                <li class="nav-item">
+                    <a class="nav-link active" id="login-tab" data-bs-toggle="tab" href="#login">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="signup-tab" data-bs-toggle="tab" href="#signup">Sign Up</a>
+                </li>
+            </ul>
+            
+            <div class="tab-content">
+                <!-- Login Form -->
+                <div class="tab-pane fade show active" id="login">
+                    <form action="{{ url_for('login') }}" method="POST">
+                        <div class="mb-3">
+                            <input type="email" class="form-control" id="loginEmail" name="email" placeholder="Email" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="password" class="form-control" id="loginPassword" name="password" placeholder="Password" required>
+                        </div>
+                        <div class="mb-3 text-end">
+                            <a href="#" class="text-decoration-none" style="color: var(--primary-color);">Forgot Password?</a>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Login</button>
+                        <p class="form-text">New here? <a href="#" onclick="switchToSignup()">Sign up</a></p>
+                    </form>
+                </div>
+                
+                <!-- Signup Form -->
+                <div class="tab-pane fade" id="signup">
+                    <form id="signupForm" action="{{ url_for('signup') }}" method="POST">
+                        <!-- Full Name Field with Validation -->
+                        <div class="mb-1">
+                            <input type="text" class="form-control" id="signupName" name="full_name" placeholder="Full Name" required>
+                            <div id="nameError" class="error-message">
+                                Full name must contain only letters and spaces (2-50 characters)
+                            </div>
+                        </div>
+                        
+                        <div class="mb-1">
+                            <input type="email" class="form-control" id="signupEmail" name="email" placeholder="Email" required>
+                            <div id="emailError" class="error-message">
+                                Please enter a valid email address
+                            </div>
+                        </div>
+                        
+                        <div class="mb-1">
+                            <select class="form-control" id="userType" name="user_type" required onchange="toggleEmployeeFields()">
+                                <option value="">Select Role</option>
+                                <option value="employee">Employee</option>
+                                <option value="employer">Employer</option>
+                            </select>
+                            <div id="roleError" class="error-message">
+                                Please select a role
+                            </div>
+                        </div>
+                        
+                        <!-- Employee-specific fields -->
+                        <div id="employeeFields" class="hidden mb-1">
+                            <div class="mb-1">
+                                <input type="number" class="form-control" id="experience" name="experience" placeholder="Experience (Years)" min="0" max="50">
+                                <div id="experienceError" class="error-message">
+                                    Experience must be between 0 and 50 years
+                                </div>
+                            </div>
+                            <div class="mb-1">
+                                <input type="text" class="form-control" id="skills" name="skills" placeholder="Skills (comma separated)">
+                                <div id="skillsError" class="error-message">
+                                    Please enter at least one skill
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-1">
+                            <input type="password" class="form-control" id="signupPassword" name="password" placeholder="Password" required>
+                            <div id="passwordError" class="error-message">
+                                Password must be at least 8 characters long
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <input type="password" class="form-control" id="confirmPassword" name="confirm_password" placeholder="Confirm Password" required>
+                            <div id="confirmPasswordError" class="error-message">
+                                Passwords do not match
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+                        <p class="form-text">Already have an account? <a href="#" onclick="switchToLogin()">Login</a></p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        function toggleEmployeeFields() {
+            const userType = document.getElementById("userType").value;
+            const employeeFields = document.getElementById("employeeFields");
+            if (userType === "employee") {
+                employeeFields.classList.remove("hidden");
+            } else {
+                employeeFields.classList.add("hidden");
+            }
+        }
+        
+        // Validate full name (letters and spaces only, 2-50 chars)
+        function validateName(name) {
+            const regex = /^[a-zA-Z\s]{2,50}$/;
+            return regex.test(name);
+        }
+        
+        // Validate email format
+        function validateEmail(email) {
+            const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return regex.test(email);
+        }
+        
+        // Validate password (min 8 chars)
+        function validatePassword(password) {
+            return password.length >= 8;
+        }
+        
+        // Validate experience (0-50)
+        function validateExperience(exp) {
+            const num = parseInt(exp);
+            return !isNaN(num) && num >= 0 && num <= 50;
+        }
+        
+        // Validate skills (at least one)
+        function validateSkills(skills) {
+            return skills.trim().length > 0;
+        }
+        
+        // Show error message
+        function showError(element, messageElement) {
+            element.classList.add("is-invalid");
+            messageElement.style.display = "block";
+        }
+        
+        // Hide error message
+        function hideError(element, messageElement) {
+            element.classList.remove("is-invalid");
+            messageElement.style.display = "none";
+        }
+        
+        // Form validation
+        document.getElementById("signupForm").addEventListener("submit", function(event) {
+            let isValid = true;
+            
+            // Validate full name
+            const nameInput = document.getElementById("signupName");
+            const nameError = document.getElementById("nameError");
+            if (!validateName(nameInput.value)) {
+                showError(nameInput, nameError);
+                isValid = false;
+            } else {
+                hideError(nameInput, nameError);
+            }
+            
+            // Validate email
+            const emailInput = document.getElementById("signupEmail");
+            const emailError = document.getElementById("emailError");
+            if (!validateEmail(emailInput.value)) {
+                showError(emailInput, emailError);
+                isValid = false;
+            } else {
+                hideError(emailInput, emailError);
+            }
+            
+            // Validate role selection
+            const roleInput = document.getElementById("userType");
+            const roleError = document.getElementById("roleError");
+            if (!roleInput.value) {
+                showError(roleInput, roleError);
+                isValid = false;
+            } else {
+                hideError(roleInput, roleError);
+            }
+            
+            // Validate employee fields if employee is selected
+            if (roleInput.value === "employee") {
+                const experienceInput = document.getElementById("experience");
+                const experienceError = document.getElementById("experienceError");
+                if (experienceInput.value && !validateExperience(experienceInput.value)) {
+                    showError(experienceInput, experienceError);
+                    isValid = false;
+                } else {
+                    hideError(experienceInput, experienceError);
+                }
+                
+                const skillsInput = document.getElementById("skills");
+                const skillsError = document.getElementById("skillsError");
+                if (!validateSkills(skillsInput.value)) {
+                    showError(skillsInput, skillsError);
+                    isValid = false;
+                } else {
+                    hideError(skillsInput, skillsError);
+                }
+            }
+            
+            // Validate password
+            const passwordInput = document.getElementById("signupPassword");
+            const passwordError = document.getElementById("passwordError");
+            if (!validatePassword(passwordInput.value)) {
+                showError(passwordInput, passwordError);
+                isValid = false;
+            } else {
+                hideError(passwordInput, passwordError);
+            }
+            
+            // Validate password confirmation
+            const confirmPasswordInput = document.getElementById("confirmPassword");
+            const confirmPasswordError = document.getElementById("confirmPasswordError");
+            if (passwordInput.value !== confirmPasswordInput.value) {
+                showError(confirmPasswordInput, confirmPasswordError);
+                isValid = false;
+            } else {
+                hideError(confirmPasswordInput, confirmPasswordError);
+            }
+            
+            if (!isValid) {
+                event.preventDefault();
+            }
+        });
+        
+        // Real-time validation for full name
+        document.getElementById("signupName").addEventListener("input", function() {
+            const nameInput = this;
+            const nameError = document.getElementById("nameError");
+            if (!validateName(nameInput.value)) {
+                showError(nameInput, nameError);
+            } else {
+                hideError(nameInput, nameError);
+            }
+        });
+        
+        function switchToSignup() {
+            const signupTab = new bootstrap.Tab(document.getElementById('signup-tab'));
+            signupTab.show();
+        }
+        
+        function switchToLogin() {
+            const loginTab = new bootstrap.Tab(document.getElementById('login-tab'));
+            loginTab.show();
+        }
+        
+        // Initialize any necessary elements
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize tab functionality
+            const authTabs = document.querySelectorAll('#authTabs a');
+            authTabs.forEach(tab => {
+                tab.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const tab = new bootstrap.Tab(this);
+                    tab.show();
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,491 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ profile.full_name }} - Profile | Skillink</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- FullCalendar CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0d6efd;
+            --primary-hover: #0b5ed7;
+            --secondary: #6c757d;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --star: #f1c40f;
+            --border: #dee2e6;
+        }
+        
+        body {
+            background-color: var(--light);
+        }
+        
+        .profile-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+        
+        .section-card {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border);
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05);
+        }
+        
+        .section-title {
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        }
+        
+        .certificate-card {
+            border-left: 4px solid var(--primary);
+        }
+        
+        .review-card {
+            border-left: 4px solid var(--star);
+        }
+        
+        .star-rating {
+            color: var(--star);
+            font-size: 1.2rem;
+        }
+        
+        .meta-icon {
+            color: var(--primary);
+            margin-right: 5px;
+        }
+        
+        .skill-badge {
+            background-color: var(--primary);
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        
+        /* Calendar styling */
+        .fc .fc-button {
+            background-color: var(--primary);
+            border: none;
+        }
+        
+        .fc .fc-button:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        .fc .fc-button-primary:not(:disabled).fc-button-active {
+            background-color: var(--primary-hover);
+        }
+        
+        .fc .fc-toolbar-title {
+            color: var(--dark);
+            font-weight: 600;
+        }
+        
+        .fc .fc-daygrid-day-number {
+            color: var (--dark);
+            font-weight: 500;
+        }
+        
+        .fc .fc-daygrid-day:hover {
+            background-color: rgba(13, 110, 253, 0.05);
+            cursor: pointer;
+        }
+        
+        .fc .fc-day-today {
+            background-color: rgba(13, 110, 253, 0.1) !important;
+        }
+        
+        .btn-outline-secondary {
+            border-color: var(--secondary);
+            color: var(--secondary);
+        }
+        
+        .btn-outline-secondary:hover {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .text-muted {
+            color: var(--secondary) !important;
+        }
+
+        .action-buttons {
+            margin-top: 20px;
+        }
+        
+        /* New styles for review form */
+        #reviewStatus {
+            min-height: 24px;
+        }
+        
+        .rating-option {
+            display: inline-block;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <!-- Header Section with Dashboard Button -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>{{ profile.full_name }}'s Profile</h1>
+            <div class="action-buttons">
+                <a href="{{ url_for('employer_dashboard') }}" class="btn btn-outline-secondary me-2">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-danger">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
+            </div>
+        </div>
+
+        <!-- Profile Container -->
+        <div class="profile-container">
+            <!-- Profile Header -->
+            <div class="profile-header mb-4">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h2 class="mb-3">{{ profile.full_name }}</h2>
+                        <div class="d-flex flex-wrap gap-3 mb-3">
+                            <div>
+                                <i class="bi bi-briefcase meta-icon"></i>
+                                <span>{{ profile.experience }}</span>
+                            </div>
+                            <div>
+                                <i class="bi bi-geo-alt meta-icon"></i>
+                                <span>{{ profile.location }}</span>
+                            </div>
+                            <div>
+                                <i class="bi bi-telephone meta-icon"></i>
+                                <span>{{ profile.contact_info }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                         
+                    
+                </div>
+                <div>
+                    <h5 class="mb-2">Skills</h5>
+                    <div>
+                        {% for skill in profile.skills.split(',') %}
+                        <span class="badge skill-badge">{{ skill.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- About Section -->
+            <div class="section-card">
+                <h3 class="section-title"><i class="bi bi-person-badge me-2"></i>About</h3>
+                <p class="mb-0">{{ profile.bio or "No bio available" }}</p>
+            </div>
+
+            <!-- Certificates Section -->
+            {% if certificates %}
+            <div class="section-card">
+                <h3 class="section-title"><i class="bi bi-award me-2"></i>Certificates</h3>
+                <div class="row g-3">
+                    {% for cert in certificates %}
+                    <div class="col-md-6">
+                        <div class="card card-hover certificate-card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ cert.title }}</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">
+                                    <i class="bi bi-building"></i> {{ cert.issuing_organization }}
+                                </h6>
+                                <p class="card-text text-muted small">
+                                    <i class="bi bi-calendar"></i> Issued: {{ cert.issue_date.strftime('%B %Y') }}
+                                </p>
+                                {% if cert.description %}
+                                <p class="card-text">{{ cert.description }}</p>
+                                {% endif %}
+                                {% if cert.certificate_url %}
+                                <a href="{{ cert.certificate_url }}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
+                                    <i class="bi bi-eye"></i> View Certificate
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Ratings and Reviews Section -->
+            <div class="section-card">
+                <h3 class="section-title"><i class="bi bi-star me-2"></i>Ratings & Reviews</h3>
+                
+                <!-- Rating Summary -->
+                <div class="card mb-4 border-0 bg-light">
+                    <div class="card-body p-3">
+                        {% if avg_rating > 0 %}
+                        <div class="d-flex align-items-center">
+                            <div class="star-rating me-3">
+                                {{ '★' * avg_rating|round(0)|int }}{{ '☆' * (5 - avg_rating|round(0)|int) }}
+                            </div>
+                            <div>
+                                <h4 class="mb-0">{{ avg_rating|round(1) }}</h4>
+                                <p class="text-muted mb-0">Average from {{ reviews|length }} reviews</p>
+                            </div>
+                        </div>
+                        {% else %}
+                        <p class="text-muted mb-0"><i class="bi bi-info-circle"></i> No reviews yet</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Review Form -->
+                {% if current_user_id != employee_id %}
+                <div class="card mb-4 border-0 bg-light">
+                    <div class="card-body p-4">
+                        <h4 class="mb-3">Leave a Review</h4>
+                        <form id="reviewForm">
+                            <input type="hidden" name="employee_id" value="{{ employee_id }}">
+                            <div class="mb-3">
+                                <label class="form-label">Rating</label>
+                                <div class="rating-input">
+                                    {% for i in range(5, 0, -1) %}
+                                    <div class="rating-option">
+                                        <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" required>
+                                        <label for="star{{ i }}">{{ '★' * i }}{{ '☆' * (5 - i) }}</label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="review_text" class="form-label">Your Review</label>
+                                <textarea name="review_text" id="review_text" class="form-control" 
+                                          rows="3" placeholder="Share your experience working with this professional..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send"></i> Submit Review
+                            </button>
+                            <div id="reviewStatus" class="mt-2"></div>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Reviews List -->
+                <div id="reviewsList">
+                    {% for review in reviews %}
+                    <div class="card card-hover review-card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="card-title mb-0">{{ review.employer_name }}</h5>
+                                <div class="star-rating">
+                                    {{ '★' * review.rating }}{{ '☆' * (5 - review.rating) }}
+                                </div>
+                            </div>
+                            <p class="text-muted small mb-3">
+                                <i class="bi bi-clock"></i> {{ review.created_at.strftime('%B %d, %Y') }}
+                            </p>
+                            {% if review.review_text %}
+                            <p class="card-text">{{ review.review_text }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 bg-light rounded">
+                        <i class="bi bi-chat-square-text" style="font-size: 2rem;"></i>
+                        <p class="text-muted mt-2">No reviews available yet</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Availability Calendar Section -->
+            <div class="section-card">
+                <h3 class="section-title"><i class="bi bi-calendar me-2"></i>Availability</h3>
+                <div id="calendar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize calendar
+            const calendarEl = document.getElementById('calendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                events: '/employer/calendar_events/{{ employee_id }}',
+                eventClick: function(info) {
+                    info.jsEvent.preventDefault();
+                },
+                eventTimeFormat: {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                }
+            });
+            calendar.render();
+
+            // Handle review form submission
+            $('#reviewForm').submit(function(e) {
+                e.preventDefault();
+                
+                // Validate review text
+                const reviewText = $('#review_text').val().trim();
+                const sentenceCount = reviewText.split('.').filter(sentence => sentence.trim().length > 0).length;
+                if (sentenceCount < 2) {
+                    $('#reviewStatus').text('Share your experience in 2 sentence.')
+                                     .removeClass('text-info text-success')
+                                     .addClass('text-danger');
+                    return;
+                }
+
+                // Show loading state
+                $('#reviewStatus').html('<div class="spinner-border spinner-border-sm" role="status"></div> Submitting review...')
+                                 .removeClass('text-danger text-success')
+                                 .addClass('text-info');
+                
+                // Get form data
+                const formData = $(this).serialize();
+                
+                // Send AJAX request
+                $.ajax({
+                    url: '/submit_review',
+                    type: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        if (response.success) {
+                            // Add the new review to the page
+                            addReviewToDOM(response.review);
+                            
+                            // Update the average rating display
+                            updateRatingDisplay(response.avg_rating, response.review_count);
+                            
+                            // Clear the form
+                            $('#reviewForm')[0].reset();
+                            
+                            // Show success message
+                            $('#reviewStatus').text('Review submitted successfully!')
+                                             .removeClass('text-info')
+                                             .addClass('text-success');
+                        }
+                    },
+                    error: function(xhr) {
+                        $('#reviewStatus').text(xhr.responseJSON?.error || 'Error submitting review')
+                                         .removeClass('text-info')
+                                         .addClass('text-danger');
+                    }
+                });
+            });
+            
+            // Function to add new review to the DOM
+            function addReviewToDOM(review) {
+                const reviewHtml = `
+                    <div class="card card-hover review-card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="card-title mb-0">${review.employer_name}</h5>
+                                <div class="star-rating">
+                                    ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}
+                                </div>
+                            </div>
+                            <p class="text-muted small mb-3">
+                                <i class="bi bi-clock"></i> ${new Date(review.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                            </p>
+                            ${review.review_text ? `<p class="card-text">${review.review_text}</p>` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                // Prepend the new review to the reviews section
+                if ($('#reviewsList').children().length && !$('#reviewsList').children().first().hasClass('card')) {
+                    // If there's a "no reviews" message, replace it
+                    $('#reviewsList').html(reviewHtml);
+                } else {
+                    // Otherwise prepend the new review
+                    $('#reviewsList').prepend(reviewHtml);
+                }
+            }
+            
+            // Function to update the rating display
+            function updateRatingDisplay(avgRating, reviewCount) {
+                // Update the average rating stars
+                $('.star-rating').first().html(
+                    `${'★'.repeat(Math.round(avgRating))}${'☆'.repeat(5 - Math.round(avgRating))}`
+                );
+                
+                // Update the rating text
+                $('.star-rating').first().next().find('h4').text(avgRating.toFixed(1));
+                $('.star-rating').first().next().find('p').text(`Average from ${reviewCount} reviews`);
+            }
+
+            // Contact button functionality - opens Gmail with prefilled content
+            document.getElementById('contact-employee-btn')?.addEventListener('click', async function() {
+                const employeeId = this.getAttribute('data-employee-id');
+                const employerName = "{{ session['full_name'] }}";
+                
+                // Show loading state
+                const originalText = this.innerHTML;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Loading...';
+                this.disabled = true;
+                
+                try {
+                    // Fetch employee contact info
+                    const response = await fetch(`/employer/contact/${employeeId}`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.employee.email) {
+                        // Create Gmail compose URL with prefilled content
+                        const subject = encodeURIComponent(`Job Opportunity from ${employerName}`);
+                        const body = encodeURIComponent(
+                            `Dear ${data.employee.name},\n\n` +
+                            `I came across your profile on Skillink and would like to discuss a potential opportunity with you.\n\n` +
+                            `Best regards,\n${employerName}`
+                        );
+                        
+                        // Open Gmail compose window
+                        window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${data.employee.email}&su=${subject}&body=${body}`, '_blank');
+                    } else {
+                        alert('Error: Could not retrieve employee contact information');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to contact employee');
+                } finally {
+                    // Reset button state
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

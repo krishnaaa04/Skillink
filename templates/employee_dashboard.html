@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Dashboard - Skillink</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --primary-hover: #0b5ed7;
+            --header-bg: #0d6efd;
+            --text-light: #f8f9fa;
+            --text-dark: #212529;
+            --card-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-dark);
+            background-color: #f5f7fa;
+        }
+        
+        .skillink-header {
+            background-color: var(--header-bg);
+            color: var(--text-light);
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .brand-heading {
+            font-weight: 700;
+            font-size: 1.8rem;
+            letter-spacing: -0.5px;
+            margin: 0;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .brand-heading::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+        }
+        
+        .nav-container {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 500;
+            color: white;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            background-color: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .nav-btn:hover {
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .nav-btn i {
+            font-size: 1.1rem;
+        }
+        
+        .employee-card {
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+            border: none;
+            border-radius: 10px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+        
+        .employee-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .section-card {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--card-shadow);
+            border: none;
+        }
+        
+        .stat-card {
+            height: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            border: none;
+        }
+        
+        .stat-icon {
+            font-size: 2.2rem;
+            opacity: 0.9;
+        }
+        
+        .quote-card {
+            background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+            color: white;
+            border-radius: 10px;
+            border: none;
+            overflow: hidden;
+        }
+        
+        .welcome-message {
+            background: linear-gradient(to right, #f0f7ff, #e6f2ff);
+            border-left: 4px solid var(--primary-color);
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+        }
+        
+        .btn-outline-custom {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .btn-outline-custom:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+        }
+        
+        .text-gradient {
+            background: linear-gradient(to right, #0d6efd, #0b5ed7);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <header class="skillink-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="brand-heading">Skillink</h1>
+                <div class="nav-container">
+                    <a href="{{ url_for('employee_calendar') }}" class="nav-btn">
+                        <i class="bi bi-calendar"></i> Calendar
+                    </a>
+                    <a href="{{ url_for('employee_certificates') }}" class="nav-btn">
+                        <i class="bi bi-award"></i> Certificates
+                    </a>
+                    <a href="{{ url_for('employee_profile') }}" class="nav-btn">
+                        <i class="bi bi-person"></i> Profile
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="nav-btn">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container py-4">
+        <!-- Welcome Section -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="text-gradient">Welcome, {{ user }}</h1>
+           
+        </div>
+
+        <!-- Welcome Message -->
+        <div class="welcome-message">
+            <h4><i class="bi bi-emoji-smile"></i> Welcome to your Skillink Dashboard</h4>
+            <p class="mb-0">Here you can manage your profile, certificates, and upcoming events.</p>
+        </div>
+
+        <!-- Quote of the Day Section -->
+        <div class="card quote-card mb-4">
+            <div class="card-body text-center py-4">
+                <h2 class="card-title mb-3"><i class="bi biquote"></i>Quote of the Day</h2>
+                <p class="card-text fs-4 fst-italic mb-0">"{{ quote }}"</p>
+            </div>
+        </div>
+
+        <!-- Quick Stats Section -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card employee-card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title">Certificates</h5>
+                                <p class="card-text fs-2 fw-bold">{{ certificate_count }}</p>
+                            </div>
+                            <i class="bi bi-award-fill stat-icon text-primary"></i>
+                        </div>
+                        <a href="{{ url_for('employee_certificates') }}" class="btn btn-sm btn-outline-custom mt-2">View All</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card employee-card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title">Add Events</h5>
+                                <p class="card-text fs-2 fw-bold">{{ upcoming_events_count }}</p>
+                            </div>
+                            <i class="bi bi-calendar-event-fill stat-icon text-success"></i>
+                        </div>
+                        <a href="{{ url_for('employee_calendar') }}" class="btn btn-sm btn-outline-success mt-2">View Calendar</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card employee-card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title">Profile Completeness</h5>
+                                <p class="card-text fs-2 fw-bold">{{ profile_completeness }}%</p>
+                            </div>
+                            <i class="bi bi-person-badge-fill stat-icon text-warning"></i>
+                        </div>
+                        <a href="{{ url_for('employee_profile') }}" class="btn btn-sm btn-outline-warning mt-2">Complete Profile</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Events Section -->
+        <div class="card section-card">
+            <div class="card-body">
+                <h3 class="mb-4"><i class="bi bi-calendar-check me-2"></i>Upcoming Events</h3>
+                <div class="list-group">
+                    {% if upcoming_events %}
+                        {% for event in upcoming_events %}
+                        <a href="{{ url_for('employee_calendar') }}" class="list-group-item list-group-item-action border-0 py-3">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1 fw-bold">{{ event.title }}</h6>
+                                <small class="text-muted">{{ event.date }}</small>
+                            </div>
+                            <p class="mb-1 text-muted">{{ event.description }}</p>
+                            <small class="text-primary">{{ event.location }}</small>
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                        <div class="list-group-item border-0 py-3">
+                            <p class="mb-1 text-muted">No upcoming events</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

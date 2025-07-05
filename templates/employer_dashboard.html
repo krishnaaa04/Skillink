@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employer Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --primary-hover: #0b5ed7;
+            --text-gradient: linear-gradient(to right, #0d6efd, #0b5ed7);
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #212529;
+        }
+        
+        .brand-heading {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 2rem;
+            letter-spacing: -0.5px;
+            margin: 0;
+            position: relative;
+            display: inline-block;
+            color: #0d6efd;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            background: linear-gradient(to right, #0d6efd, #0b5ed7);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            padding-bottom: 5px;
+        }
+        
+        .brand-heading::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, rgba(13, 110, 253, 0.3), rgba(11, 94, 215, 0.3));
+            border-radius: 3px;
+        }
+        
+        .employee-card {
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            border-left: 3px solid transparent;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .employee-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .filter-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .skill-badge {
+            margin-right: 5px;
+            margin-bottom: 5px;
+            background-color: var(--primary-color);
+        }
+        
+        .action-btn {
+            margin-right: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        #all-employees {
+            min-height: 300px;
+        }
+        
+        .filter-row {
+            margin-bottom: 15px;
+        }
+        
+        .welcome-message {
+            background: linear-gradient(to right, #f0f7ff, #e6f2ff);
+            border-left: 4px solid var(--primary-color);
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+        }
+        
+        .text-gradient {
+            background: var(--text-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .skillink-header {
+            background-color: white;
+            color: var(--primary-color);
+            padding: 15px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .logout-btn {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .logout-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .experience-option {
+            padding-left: 15px;
+        }
+        
+        .experience-group {
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <header class="skillink-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="brand-heading">Skillink</h1>
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-primary logout-btn">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container py-4">
+        <!-- Welcome Section -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="text-gradient">Welcome, {{ user }}</h1>
+            <div class="text-muted"> {{ last_login }}</div>
+        </div>
+
+        <!-- Welcome Message -->
+        <div class="welcome-message">
+            <h4><i class="bi bi-briefcase"></i> Welcome to your Employer Dashboard</h4>
+            <p class="mb-0">Here you can search and manage potential candidates for your organization.</p>
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div class="filter-section">
+            <div class="row mb-3">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="search" placeholder="Search employees by name, skills, or keywords..." 
+                               onkeypress="if(event.key === 'Enter') searchEmployees()">
+                        <button class="btn btn-primary" onclick="searchEmployees()">
+                            <i class="bi bi-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset Filters
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Row 1 -->
+            <div class="row filter-row">
+                <div class="col-md-6">
+                    <label for="locationFilter" class="form-label">Location</label>
+                    <select class="form-select" id="locationFilter">
+                        <option value="">All Locations</option>
+                        {% for loc in locations %}
+                            <option value="{{ loc }}">{{ loc }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="experienceFilter" class="form-label">Experience</label>
+                    <select class="form-select" id="experienceFilter">
+                        <option value="">All Experience Levels</option>
+                        <optgroup label="Entry Level" class="experience-group">
+                            <option value="0-2" class="experience-option">0-2 years</option>
+                        </optgroup>
+                        <optgroup label="Mid Level" class="experience-group">
+                            <option value="3-5" class="experience-option">3-5 years</option>
+                            <option value="6-9" class="experience-option">6-9 years</option>
+                        </optgroup>
+                        <optgroup label="Senior Level" class="experience-group">
+                            <option value="10-14" class="experience-option">10-14 years</option>
+                            <option value="15-19" class="experience-option">15-19 years</option>
+                        </optgroup>
+                        <optgroup label="Executive Level" class="experience-group">
+                            <option value="20+" class="experience-option">20+ years</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employee Results -->
+        <div class="row" id="all-employees">
+            {% for emp in employees %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card employee-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h5 class="card-title">{{ emp.full_name }}</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">{{ emp.title or 'Professional' }}</h6>
+                            </div>
+                        </div>
+                        <div class="employee-details mt-2">
+                            <p class="mb-1"><small class="text-muted">Experience: {{ emp.experience or 'N/A' }} years</small></p>
+                            <p class="mb-1"><small class="text-muted">Location: {{ emp.location or 'N/A' }}</small></p>
+                        </div>
+                        <div class="employee-skills mt-2">
+                            {% for skill in emp.skills.split(',') if emp.skills %}
+                            <span class="badge bg-primary skill-badge">{{ skill }}</span>
+                            {% else %}
+                            <span class="text-muted">Skills not specified</span>
+                            {% endfor %}
+                        </div>
+                        <p class="card-text mt-2">{{ emp.bio or '' }}</p>
+                        <div class="action-buttons mt-3">
+                            <a href="{{ url_for('employer_view_profile', employee_id=emp.id) }}" class="btn btn-sm btn-outline-secondary action-btn">
+                                <i class="bi bi-person-lines-fill"></i> View Profile
+                            </a>
+                            <a href="{{ url_for('employer_contact', employee_id=emp.id) }}" class="btn btn-sm btn-outline-primary action-btn">
+                                <i class="bi bi-envelope"></i> Contact
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Initialize event listeners when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners to filter elements
+            document.getElementById('locationFilter').addEventListener('change', searchEmployees);
+            document.getElementById('experienceFilter').addEventListener('change', searchEmployees);
+            
+            // Add event listener for Enter key in search input
+            document.getElementById('search').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchEmployees();
+                }
+            });
+        });
+
+        function searchEmployees() {
+            const query = document.getElementById('search').value || '';
+            const location = document.getElementById('locationFilter').value || '';
+            const experienceRange = document.getElementById('experienceFilter').value || '';
+            
+            // Convert experience range to min/max values for backend
+            let minExperience = null;
+            let maxExperience = null;
+            
+            if (experienceRange) {
+                if (experienceRange === '20+') {
+                    minExperience = 20;
+                } else if (experienceRange === '0-2') {
+                    minExperience = 0;
+                    maxExperience = 2;
+                } else {
+                    const range = experienceRange.split('-');
+                    minExperience = parseInt(range[0]);
+                    maxExperience = parseInt(range[1]);
+                }
+            }
+
+            fetch(`/employer/search?query=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}&min_exp=${minExperience || ''}&max_exp=${maxExperience || ''}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    const resultsDiv = document.getElementById('all-employees');
+                    resultsDiv.innerHTML = '';
+
+                    if (data.error) {
+                        resultsDiv.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                    } else if (data.length === 0) {
+                        resultsDiv.innerHTML = '<div class="col-12 text-center py-5"><div class="alert alert-warning">No employees found matching your criteria</div></div>';
+                    } else {
+                        data.forEach(emp => {
+                            const empCard = document.createElement('div');
+                            empCard.className = 'col-md-6 col-lg-4';
+                            empCard.innerHTML = `
+                                <div class="card employee-card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h5 class="card-title">${emp.full_name || 'No name'}</h5>
+                                                <h6 class="card-subtitle mb-2 text-muted">${emp.title || 'Professional'}</h6>
+                                            </div>
+                                        </div>
+                                        <div class="employee-details mt-2">
+                                            <p class="mb-1"><small class="text-muted">Experience: ${emp.experience || 'N/A'} years</small></p>
+                                            <p class="mb-1"><small class="text-muted">Location: ${emp.location || 'N/A'}</small></p>
+                                        </div>
+                                        <div class="employee-skills mt-2">
+                                            ${emp.skills ? emp.skills.split(',').map(skill => 
+                                                `<span class="badge bg-primary skill-badge">${skill.trim()}</span>`
+                                            ).join('') : '<span class="text-muted">Skills not specified</span>'}
+                                        </div>
+                                        <p class="card-text mt-2">${emp.bio || ''}</p>
+                                        <div class="action-buttons mt-3">
+                                            <a href="/employer/profile/${emp.id}" class="btn btn-sm btn-outline-secondary action-btn">
+                                                <i class="bi bi-person-lines-fill"></i> View Profile
+                                            </a>
+                                            <a href="/employer/contact/${emp.id}" class="btn btn-sm btn-outline-primary action-btn">
+                                                <i class="bi bi-envelope"></i> Contact
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            resultsDiv.appendChild(empCard);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('all-employees').innerHTML = 
+                        `<div class="alert alert-danger">Error loading search results: ${error.message}</div>`;
+                });
+        }
+
+        function resetFilters() {
+            document.getElementById('search').value = '';
+            document.getElementById('locationFilter').value = '';
+            document.getElementById('experienceFilter').value = '';
+            searchEmployees();
+        }
+    </script>
+</body>
+</html>

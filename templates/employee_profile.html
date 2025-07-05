@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Profile - Skillink</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .profile-container {
+            background-color: #f8f9fa;
+            padding: 30px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+        }
+        .form-control, .form-select {
+            border-radius: 6px;
+            padding: 10px;
+            border: 1px solid #ced4da;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        .save-btn {
+            width: 100%;
+            padding: 10px;
+            font-weight: 500;
+        }
+        #statusMessage {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: 500;
+        }
+        .is-invalid {
+            border-color: #dc3545 !important;
+        }
+        .is-invalid:focus {
+            box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+        }
+        .profile-icon {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background-color: #0d6efd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto;
+            color: white;
+            font-size: 4rem;
+            border: 3px solid #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <!-- Header Section -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>My Profile</h1>
+            <div>
+                <a href="{{ url_for('employee_dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-danger">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
+            </div>
+        </div>
+
+        <!-- Profile Container -->
+        <div class="profile-container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <!-- Profile Icon Section -->
+                    <div class="text-center mb-4">
+                        <div class="profile-icon">
+                            <i class="bi bi-person"></i>
+                        </div>
+                    </div>
+
+                    <!-- Profile Form -->
+                    <form id="profileForm">
+                        <div class="mb-3">
+                            <label for="bio" class="form-label">Bio</label>
+                            <textarea class="form-control" id="bio" name="bio" rows="3" 
+                                      placeholder="Tell us about yourself...">{{ profile.bio }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="experience" class="form-label">Experience (in years)</label>
+                            <input type="text" class="form-control" id="experience" name="experience" 
+                                   placeholder="Your work experience in years" value="{{ profile.experience }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="skills" class="form-label">Skill (only one skill allowed)</label>
+                            <input type="text" class="form-control" id="skills" name="skills" 
+                                   placeholder="Your primary skill (e.g., Python)" value="{{ profile.skills }}">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="contact_info" class="form-label">Contact Info (email or phone)</label>
+                                <input type="text" class="form-control" id="contact_info" name="contact_info" 
+                                       placeholder="Your email or phone number" value="{{ profile.contact_info }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="location" class="form-label">Location</label>
+                                <input type="text" class="form-control" id="location" name="location" 
+                                       placeholder="Your current location" value="{{ profile.location }}">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary save-btn">
+                            <i class="bi bi-save"></i> Save Changes
+                        </button>
+                        <p id="statusMessage"></p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Validate email format
+        function isValidEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        // Validate phone number format (simple validation for 10 digits)
+        function isValidPhone(phone) {
+            const re = /^\d{10}$/;
+            return re.test(phone);
+        }
+
+        // Handle form submission with AJAX
+        $('#profileForm').submit(function(event) {
+            event.preventDefault();
+            
+            // Validate skills - should not contain commas (only one skill allowed)
+            const skills = $('#skills').val().trim();
+            if (skills.includes(',')) {
+                $('#statusMessage').text('Please enter only one skill (no commas allowed)').css('color', 'red');
+                $('#skills').addClass('is-invalid');
+                return;
+            }
+            
+            // Validate experience - should be a number
+            const experience = $('#experience').val().trim();
+            if (experience && isNaN(experience)) {
+                $('#statusMessage').text('Experience must be a number (years)').css('color', 'red');
+                $('#experience').addClass('is-invalid');
+                return;
+            }
+            
+            // Validate contact info - must be email or phone
+            const contactInfo = $('#contact_info').val().trim();
+            if (contactInfo && !isValidEmail(contactInfo) && !isValidPhone(contactInfo)) {
+                $('#statusMessage').text('Please enter a valid email or 10-digit phone number').css('color', 'red');
+                $('#contact_info').addClass('is-invalid');
+                return;
+            }
+
+            // Show loading state
+            const saveBtn = $('.save-btn');
+            saveBtn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...');
+            saveBtn.prop('disabled', true);
+
+            $.ajax({
+                url: '/employee/profile',
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    $('#statusMessage').text('Profile updated successfully!').css('color', 'green');
+                    
+                    // Flash message effect
+                    const statusMsg = $('#statusMessage');
+                    statusMsg.fadeIn().delay(3000).fadeOut();
+                    
+                    // Clear any invalid states
+                    $('.is-invalid').removeClass('is-invalid');
+                },
+                error: function(xhr) {
+                    const errorMsg = xhr.responseJSON?.error || 'Error updating profile. Please try again.';
+                    $('#statusMessage').text(errorMsg).css('color', 'red');
+                },
+                complete: function() {
+                    saveBtn.html('<i class="bi bi-save"></i> Save Changes');
+                    saveBtn.prop('disabled', false);
+                }
+            });
+        });
+
+        // Add real-time validation for skills field
+        $('#skills').on('input', function() {
+            const skills = $(this).val();
+            if (skills.includes(',')) {
+                $(this).addClass('is-invalid');
+                $('#statusMessage').text('Only one skill allowed (no commas)').css('color', 'red');
+            } else {
+                $(this).removeClass('is-invalid');
+                $('#statusMessage').text('');
+            }
+        });
+
+        // Add real-time validation for experience field
+        $('#experience').on('input', function() {
+            const exp = $(this).val();
+            if (exp && isNaN(exp)) {
+                $(this).addClass('is-invalid');
+                $('#statusMessage').text('Experience must be a number (years)').css('color', 'red');
+            } else {
+                $(this).removeClass('is-invalid');
+                $('#statusMessage').text('');
+            }
+        });
+
+        // Add real-time validation for contact info field
+        $('#contact_info').on('input', function() {
+            const contact = $(this).val();
+            if (contact && !isValidEmail(contact) && !isValidPhone(contact)) {
+                $(this).addClass('is-invalid');
+                $('#statusMessage').text('Enter valid email or 10-digit phone number').css('color', 'red');
+            } else {
+                $(this).removeClass('is-invalid');
+                $('#statusMessage').text('');
+            }
+        });
+    </script>
+</body>
+</html>

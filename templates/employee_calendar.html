@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Calendar - Skillink</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- FullCalendar CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+    <style>
+        .calendar-container {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .events-container {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .event-card {
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+            border-left: 3px solid transparent;
+        }
+        .event-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .action-btn {
+            margin-right: 8px;
+        }
+        .fc .fc-button {
+            background-color: #0d6efd;
+            border: none;
+        }
+        .fc .fc-button:hover {
+            background-color: #0b5ed7;
+        }
+        .fc .fc-button-primary:not(:disabled).fc-button-active {
+            background-color: #0b5ed7;
+        }
+        .fc .fc-toolbar-title {
+            color: #212529;
+            font-weight: 600;
+        }
+        .fc .fc-daygrid-day-number {
+            color: #212529;
+            font-weight: 500;
+        }
+        .fc .fc-daygrid-day:hover {
+            background-color: #f0f4ff;
+            cursor: pointer;
+        }
+        .fc .fc-day-today {
+            background-color: #e0e7ff !important;
+        }
+        .no-events {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+            font-style: italic;
+        }
+        .past-event {
+            opacity: 0.7;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <!-- Header Section -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Welcome, {{ user }} to Your Calendar</h1>
+            <div>
+                <a href="{{ url_for('employee_dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-danger">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
+            </div>
+        </div>
+
+        <!-- Calendar Section -->
+        <div class="calendar-container">
+            <button id="addEventBtn" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#eventModal">
+                <i class="bi bi-plus-circle"></i> Add New Event
+            </button>
+            <div id="calendar"></div>
+            
+            <div id="eventsContainer" class="events-container" style="display: none;">
+                <h3 id="selectedDateHeader" class="mb-4"></h3>
+                <div id="eventsList" class="row"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Event Modal -->
+    <div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="eventModalLabel">Add New Event</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="eventForm">
+                        <input type="hidden" id="eventId">
+                        <div class="mb-3">
+                            <label for="eventTitle" class="form-label">Event Title</label>
+                            <input type="text" class="form-control" id="eventTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="startDate" class="form-label">Start Date & Time</label>
+                            <input type="datetime-local" class="form-control" id="startDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="endDate" class="form-label">End Date & Time</label>
+                            <input type="datetime-local" class="form-control" id="endDate">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Close
+                    </button>
+                    <button type="button" id="deleteEventBtn" class="btn btn-danger" style="display: none;">
+                        <i class="bi bi-trash"></i> Delete
+                    </button>
+                    <button type="button" id="saveEventBtn" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Save Event
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- FullCalendar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize calendar
+            const calendarEl = document.getElementById('calendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth'
+                },
+                events: false,
+                dateClick: function(info) {
+                    const clickedDate = new Date(info.dateStr);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    
+                    if (clickedDate < today) {
+                        showAlert('Cannot create events in the past', 'warning');
+                        return;
+                    }
+                    
+                    loadDateEvents(info.dateStr);
+                },
+                eventClick: function(info) {
+                    const eventDate = new Date(info.event.startStr);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    
+                    $('#eventId').val(info.event.id);
+                    $('#eventTitle').val(info.event.title);
+                    $('#startDate').val(info.event.startStr.substring(0, 16));
+                    $('#endDate').val(info.event.end ? info.event.endStr.substring(0, 16) : '');
+                    $('#deleteEventBtn').show();
+                    
+                    if (eventDate < today) {
+                        $('#eventTitle').prop('disabled', true);
+                        $('#startDate').prop('disabled', true);
+                        $('#endDate').prop('disabled', true);
+                        $('#saveEventBtn').prop('disabled', true);
+                        showAlert('This is a past event and cannot be modified', 'warning');
+                    } else {
+                        $('#eventTitle').prop('disabled', false);
+                        $('#startDate').prop('disabled', false);
+                        $('#endDate').prop('disabled', false);
+                        $('#saveEventBtn').prop('disabled', false);
+                    }
+                    
+                    $('#eventModal').modal('show');
+                    info.jsEvent.preventDefault();
+                }
+            });
+            calendar.render();
+
+            // Modal elements
+            const eventModal = new bootstrap.Modal(document.getElementById('eventModal'));
+            const saveEventBtn = document.getElementById('saveEventBtn');
+            const deleteEventBtn = document.getElementById('deleteEventBtn');
+            const eventsContainer = document.getElementById('eventsContainer');
+            const eventsList = document.getElementById('eventsList');
+            const selectedDateHeader = document.getElementById('selectedDateHeader');
+
+            // Load events for a specific date
+            function loadDateEvents(dateStr) {
+                $.ajax({
+                    url: '/employee/calendar/date_events?date=' + dateStr,
+                    method: 'GET',
+                    success: function(response) {
+                        displayEvents(dateStr, response);
+                    },
+                    error: function(xhr) {
+                        showAlert('Error loading events: ' + xhr.responseJSON.error, 'danger');
+                    }
+                });
+            }
+
+            // Display events for a date
+            function displayEvents(dateStr, events) {
+                const date = new Date(dateStr);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const isPastDate = date < today;
+                
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                selectedDateHeader.textContent = 'Events for ' + date.toLocaleDateString('en-US', options);
+                
+                eventsList.innerHTML = '';
+                
+                if (events.length === 0) {
+                    eventsList.innerHTML = '<div class="col-12 no-events">No events scheduled for this day</div>';
+                } else {
+                    events.forEach(event => {
+                        const eventDate = new Date(dateStr + 'T' + event.start_time);
+                        const isPastEvent = eventDate < today;
+                        const buttonsDisabled = isPastDate || isPastEvent ? 'disabled' : '';
+                        
+                        let timeText = event.start_time;
+                        if (event.end_time) {
+                            timeText += ' - ' + event.end_time;
+                        }
+                        
+                        const eventItem = document.createElement('div');
+                        eventItem.className = 'col-md-6';
+                        
+                        eventItem.innerHTML = `
+                            <div class="card event-card ${isPastEvent ? 'past-event' : ''}">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h5 class="card-title">${event.title}</h5>
+                                            <h6 class="card-subtitle mb-2 text-muted">
+                                                <i class="bi bi-clock"></i> ${timeText}
+                                            </h6>
+                                        </div>
+                                        ${isPastEvent ? '<span class="badge bg-secondary">Past Event</span>' : ''}
+                                    </div>
+                                    <div class="action-buttons mt-3">
+                                        <button class="btn btn-sm btn-outline-primary action-btn edit-event" data-id="${event.id}" ${buttonsDisabled}>
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger action-btn delete-event" data-id="${event.id}" ${buttonsDisabled}>
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        eventsList.appendChild(eventItem);
+                        
+                        // Add event listeners to edit buttons
+                        document.querySelectorAll('.edit-event').forEach(button => {
+                            button.addEventListener('click', function() {
+                                if (this.disabled) return;
+                                
+                                const eventId = this.getAttribute('data-id');
+                                const event = events.find(e => e.id == eventId);
+                                if (event) {
+                                    $('#eventId').val(event.id);
+                                    $('#eventTitle').val(event.title);
+                                    $('#startDate').val(dateStr + 'T' + event.start_time);
+                                    if (event.end_time) {
+                                        $('#endDate').val(dateStr + 'T' + event.end_time);
+                                    }
+                                    $('#deleteEventBtn').show();
+                                    
+                                    // Enable/disable fields based on date
+                                    const eventDate = new Date(dateStr + 'T' + event.start_time);
+                                    const today = new Date();
+                                    today.setHours(0, 0, 0, 0);
+                                    
+                                    if (eventDate < today) {
+                                        $('#eventTitle').prop('disabled', true);
+                                        $('#startDate').prop('disabled', true);
+                                        $('#endDate').prop('disabled', true);
+                                        $('#saveEventBtn').prop('disabled', true);
+                                        showAlert('This is a past event and cannot be modified', 'warning');
+                                    } else {
+                                        $('#eventTitle').prop('disabled', false);
+                                        $('#startDate').prop('disabled', false);
+                                        $('#endDate').prop('disabled', false);
+                                        $('#saveEventBtn').prop('disabled', false);
+                                    }
+                                    
+                                    $('#eventModal').modal('show');
+                                }
+                            });
+                        });
+
+                        // Add event listeners to delete buttons
+                        document.querySelectorAll('.delete-event').forEach(button => {
+                            button.addEventListener('click', function() {
+                                if (this.disabled) return;
+                                
+                                const eventId = this.getAttribute('data-id');
+                                const event = events.find(e => e.id == eventId);
+                                if (event) {
+                                    const eventDate = new Date(dateStr + 'T' + event.start_time);
+                                    const today = new Date();
+                                    today.setHours(0, 0, 0, 0);
+                                    
+                                    if (eventDate < today) {
+                                        showAlert('Cannot delete past events', 'warning');
+                                        return;
+                                    }
+                                    
+                                    if (confirm('Are you sure you want to delete this event?')) {
+                                        deleteEventOnServer(eventId);
+                                    }
+                                }
+                            });
+                        });
+                    });
+                }
+                
+                eventsContainer.style.display = 'block';
+            }
+
+            // Save event handler
+            saveEventBtn.addEventListener('click', function() {
+                const eventId = $('#eventId').val();
+                const eventData = {
+                    title: $('#eventTitle').val(),
+                    start: $('#startDate').val(),
+                    end: $('#endDate').val()
+                };
+
+                if (!eventData.title || !eventData.start) {
+                    showAlert('Title and Start Date are required', 'danger');
+                    return;
+                }
+
+                // Check if the event is in the past
+                const startDate = new Date(eventData.start);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                if (startDate < today) {
+                    showAlert('Cannot create or modify events in the past', 'warning');
+                    return;
+                }
+
+                if (eventId) {
+                    updateEventOnServer(eventId, eventData);
+                } else {
+                    createEventOnServer(eventData);
+                }
+            });
+
+            // Delete event handler
+            deleteEventBtn.addEventListener('click', function() {
+                const eventId = $('#eventId').val();
+                const startDate = new Date($('#startDate').val());
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                if (startDate < today) {
+                    showAlert('Cannot delete past events', 'warning');
+                    return;
+                }
+                
+                if (confirm('Are you sure you want to delete this event?')) {
+                    deleteEventOnServer(eventId);
+                }
+            });
+
+            // Reset modal when closed
+            $('#eventModal').on('hidden.bs.modal', function() {
+                $('#eventForm')[0].reset();
+                $('#eventId').val('');
+                $('#deleteEventBtn').hide();
+                $('#eventTitle').prop('disabled', false);
+                $('#startDate').prop('disabled', false);
+                $('#endDate').prop('disabled', false);
+                $('#saveEventBtn').prop('disabled', false);
+            });
+
+            // AJAX function to create event
+            function createEventOnServer(eventData) {
+                $.ajax({
+                    url: '/employee/calendar/add',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(eventData),
+                    success: function(response) {
+                        const currentDate = calendar.view.currentStart;
+                        loadDateEvents(currentDate.toISOString().split('T')[0]);
+                        eventModal.hide();
+                        showAlert('Event created successfully!', 'success');
+                    },
+                    error: function(xhr) {
+                        showAlert('Error creating event: ' + xhr.responseJSON.error, 'danger');
+                    }
+                });
+            }
+
+            // AJAX function to update event
+            function updateEventOnServer(eventId, eventData) {
+                $.ajax({
+                    url: '/employee/calendar/update/' + eventId,
+                    method: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify(eventData),
+                    success: function() {
+                        const currentDate = calendar.view.currentStart;
+                        loadDateEvents(currentDate.toISOString().split('T')[0]);
+                        eventModal.hide();
+                        showAlert('Event updated successfully!', 'success');
+                    },
+                    error: function(xhr) {
+                        showAlert('Error updating event: ' + xhr.responseJSON.error, 'danger');
+                    }
+                });
+            }
+
+            // AJAX function to delete event
+            function deleteEventOnServer(eventId) {
+                $.ajax({
+                    url: '/employee/calendar/delete/' + eventId,
+                    method: 'DELETE',
+                    success: function() {
+                        const currentDate = calendar.view.currentStart;
+                        loadDateEvents(currentDate.toISOString().split('T')[0]);
+                        eventModal.hide();
+                        showAlert('Event deleted successfully!', 'success');
+                    },
+                    error: function(xhr) {
+                        showAlert('Error deleting event: ' + xhr.responseJSON.error, 'danger');
+                    }
+                });
+            }
+
+            // Helper function to show alerts
+            function showAlert(message, type) {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+                alertDiv.role = 'alert';
+                alertDiv.innerHTML = `
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+                
+                const container = document.querySelector('.container');
+                container.prepend(alertDiv);
+                
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 5000);
+            }
+        });
+    </script>
+</body>
+</html>

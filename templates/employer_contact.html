@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ profile.full_name }} - Skillink</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Skillink</h1>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('employer_dashboard') }}">Dashboard</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container profile-container">
+        <div class="profile-header">
+            <div class="profile-image">
+                {% if profile.profile_photo %}
+                    <img src="{{ profile.profile_photo }}" alt="{{ profile.full_name }}">
+                {% else %}
+                    <div class="placeholder-photo"></div>
+                {% endif %}
+            </div>
+            <div class="profile-info">
+                <h1>{{ profile.full_name }}</h1>
+                <p class="location">{{ profile.location }}</p>
+                <div class="rating">
+                    <span class="stars">{{ '★' * avg_rating|int }}{{ '☆' * (5 - avg_rating|int) }}</span>
+                    <span>({{ avg_rating }} from {{ reviews|length }} reviews)</span>
+                </div>
+                <a href="#contact" class="contact-btn">Contact {{ profile.full_name }}</a>
+            </div>
+        </div>
+
+        <div class="profile-sections">
+            <section class="profile-section about-section">
+                <h2>About</h2>
+                <p>{{ profile.bio or "No bio provided" }}</p>
+                
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <h3>Experience</h3>
+                        <p>{{ profile.experience or "Not specified" }}</p>
+                    </div>
+                    <div class="detail-item">
+                        <h3>Skills</h3>
+                        <p>{{ profile.skills or "Not specified" }}</p>
+                    </div>
+                    <div class="detail-item">
+                        <h3>Contact Info</h3>
+                        <p>{{ profile.contact_info or "Not specified" }}</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="profile-section certificates-section">
+                <h2>Certifications</h2>
+                {% if certificates %}
+                    <div class="certificates-grid">
+                        {% for cert in certificates %}
+                            <div class="certificate-card">
+                                <h3>{{ cert.title }}</h3>
+                                <p class="issuer">{{ cert.issuing_organization }}</p>
+                                <p class="date">Issued: {{ cert.issue_date }}</p>
+                                {% if cert.certificate_url %}
+                                    <a href="{{ cert.certificate_url }}" target="_blank" class="view-cert">View Certificate</a>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p>No certifications added yet.</p>
+                {% endif %}
+            </section>
+
+            <section class="profile-section reviews-section">
+                <h2>Reviews</h2>
+                {% if reviews %}
+                    <div class="reviews-list">
+                        {% for review in reviews %}
+                            <div class="review-card">
+                                <div class="review-header">
+                                    <h3>{{ review.employer_name }}</h3>
+                                    <span class="review-rating">{{ '★' * review.rating }}{{ '☆' * (5 - review.rating) }}</span>
+                                    <span class="review-date">{{ review.created_at }}</span>
+                                </div>
+                                <p class="review-text">{{ review.review_text }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p>No reviews yet.</p>
+                {% endif %}
+            </section>
+
+            <section id="contact" class="profile-section contact-section">
+                <h2>Contact {{ profile.full_name }}</h2>
+                <form id="contact-form" class="contact-form">
+                    <input type="hidden" name="employee_id" value="{{ employee_id }}">
+                    <div class="form-group">
+                        <label for="message">Your Message</label>
+                        <textarea id="message" name="message" required placeholder="Write your message here..."></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Send Message</button>
+                </form>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 Skillink. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+            
+            fetch('/send_message', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    alert('Message sent successfully!');
+                    this.reset();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while sending your message.');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send Message';
+            });
+        });
+    </script>
+    
+</body>
+</html>
